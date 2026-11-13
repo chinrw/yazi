@@ -7,6 +7,8 @@
   stdenv,
 
   installShellFiles,
+  pkg-config,
+  oniguruma,
   fetchFromGitHub,
   rust-jemalloc-sys,
 
@@ -40,11 +42,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   };
 
   nativeBuildInputs = [
+    pkg-config
     installShellFiles
     imagemagick
   ];
 
   buildInputs = [
+    oniguruma
     rust-jemalloc-sys
   ];
 
@@ -86,7 +90,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       hash = "sha256-kEVXejDg4ChFoMNBvKlwdFEyUuTcY2VuK9j0PdafKus=";
     };
   };
-
 
   meta = {
     description = "Blazing fast terminal file manager written in Rust, based on async I/O";

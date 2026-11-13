@@ -1,0 +1,38 @@
+name: Nix package validation
+
+on:
+  push:
+    branches: [ci/nix-system-oniguruma]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / ${{ matrix.nixpkgs }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        nixpkgs: [locked, master-24231ab]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: 58ee92e1ca55935f039c2f59963ea89cbeffe789
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Check and build the package
+        env:
+          NIXPKGS_SOURCE: ${{ matrix.nixpkgs }}
+        shell: bash
+        run: |
+          nix_args=(--no-write-lock-file)
+          if [[ "$NIXPKGS_SOURCE" == master-24231ab ]]; then
+            nix_args+=(--override-input nixpkgs github:NixOS/nixpkgs/24231ab190ee37a7738091611f631a5afa3ec567)
+          fi
+          nix build .#default --no-link --print-out-paths -L "${nix_args[@]}"
+          nix flake check --no-build "${nix_args[@]}"
